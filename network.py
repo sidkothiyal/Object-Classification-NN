@@ -31,6 +31,14 @@ class NeuralNetwork:
 				theline = theline.split(',')
 				theline = theline[1]
 				expected_output = self.get_expected_output(theline)
+
+                self.input_layer.put_values(feature_vector)
+                for hidden_layer in self.hidden_layers:
+                    hidden_layer.calc_neuron_vals()
+                self.output_layer.calc_neuron_vals()
+                self.output_layer.put_values(expected_output)
+
+                
 	
     def  setup_architecture(self):
         expected_output = []

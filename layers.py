@@ -1,5 +1,31 @@
 import math
 
+def softmax(output_layer_vals):
+	softmax_vals = []
+	sum_of_vals = 0
+	for i, output_layer_val in enumerate(output_layer_vals):
+		sum_of_vals += math.exp(output_layer_val)
+	
+	for i, output_layer_val in enumerate(output_layer_vals):
+		softmax_vals.append(math.exp(output_layer_val)/sum_of_vals)
+
+	return softmax_vals	
+
+def derivative_softmax(x):
+	return x * (1-x)
+
+def leaky_relu(x):
+	if x < 0:
+		return 0.001 *x
+	else:
+		return x	
+
+def derivative_leaky_relu(x):
+	if x < 0:
+		return 0.001
+	else:
+		return 1
+			
 def output_function(x):
 	return 1/(1 + math.exp(-x))
 
