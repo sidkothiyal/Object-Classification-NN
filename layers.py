@@ -3,12 +3,12 @@ import math
 def output_function(x):
 	return 1/(1 + math.exp(-x))
 
-
 def output_summation(layer, i):
 	sum = 0
 	for neuron in layer.neurons:
 		sum += neuron.get_summation(i)
 	return sum
+
 
 class HiddenLayer:
 	bias = 0
@@ -20,7 +20,7 @@ class HiddenLayer:
 
 	def calc_neuron_vals(self):
 		for i, neuron in enumerate(self.neurons):
-			neuron.value = output_function(output_summation(self.prevLayer, i) + bias)
+			neuron.value = output_function(output_summation(self.prevLayer, i) + self.bias)
 
 	def set_architecture(self, inputLayer):
 		self.prevLayer = inputLayer
@@ -29,6 +29,7 @@ class HiddenLayer:
 			self.neurons.append(Neuron)
 			for j, neuron in enumerate(self.prevLayer.neurons):
 				neuron.outgoing_weights.append(0)
+
 
 class InputLayer:
 	neurons = []
@@ -52,9 +53,10 @@ class OutputLayer:
 	def __init__(self, output_size):
 		super(OutputLayer, self).__init__()
 		self.size = output_size
+
 	def calc_neuron_vals(self):
 		for i, neuron in enumerate(self/neurons):
-			neuron.value = output_function(output_summation(self.prevLayer, i) + bias)
+			neuron.value = output_function(output_summation(self.prevLayer, i) + self.bias)
 
 	def set_architecture(self, hiddenLayer):
 		self.prevLayer = hiddenLayer
@@ -63,6 +65,15 @@ class OutputLayer:
 			self.neurons.append(Neuron)
 			for j, neuron in enumerate(self.prevLayer.neurons):
 				neuron.outgoing_weights.append(0)
+
+	def put_values(self, expected_output):
+		self.expected_output = expected_output
+
+	def output_diff(self):
+		diff = []
+		for i in xrange(self.size):
+			dif.append(expected_output[i] - self.neurons[i].value)
+		return diff	
 
 
 class Neuron:
