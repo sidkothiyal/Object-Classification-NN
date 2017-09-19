@@ -1,5 +1,7 @@
 import math
 
+#TODO bias and bias wt
+
 def softmax(output_layer_vals):
 	softmax_vals = []
 	sum_of_vals = 0
@@ -40,6 +42,7 @@ class HiddenLayer:
 	bias = 1
 	neurons = []
 	prevLayer = InputLayer()
+	nextLayer = HiddenLayer()
 	inputSummation = []
 
 	def __init__(self, hidden_layer_size):
@@ -52,14 +55,25 @@ class HiddenLayer:
 			self.inputSummation.append(output_summation(self.prevLayer, i) + self.bias)
 			neuron.value = leaky_relu(self.inputSummation[-1])
 
-	def set_architecture(self, inputLayer):
-		self.prevLayer = inputLayer
+	def set_architecture(self, prevLayer, nextLayer):
+		self.prevLayer = prevLayer
+		self.nextLayer = nextLayer
 		bias = 0.5
 		for i in xrange(self.size):
 			self.neurons.append(Neuron())
 			for j, neuron in enumerate(self.prevLayer.neurons):
 				neuron.outgoing_weights.append(0)
 
+	def change_weights(self, rate):
+		for i, neuron in enumerate(self.neurons):
+			neuron.error = derivative_leaky_relu(self.inputSummation[i])
+			sumNextErrors = 0
+			for j, nextNeuron in enumerate(self.nextLayer.neurons):
+				sumNextErrors += neuron.outgoing_weights[i] * nextNeuron.error
+			neuron.error *= sumNextErrors
+			for j, prevNeuron in enumerate(self.prevLayer.neurons):
+				weightDiff = - rate * neuron.error * prevNeuron.value
+				prevNeuron.outgoing_weights[i] += weightDiff	
 
 class InputLayer:
 	neurons = []
@@ -112,17 +126,19 @@ class OutputLayer:
 			dif.append(self.expected_output[i] - self.neurons[i].value)
 		return diff
 
-	def change_weights(self):
+	def change_weights(self, rate):
 		diff = self.output_diff()
 		for i, neuron in enumerate(self.neurons):
+			neuron.error = diff[i] * derivative_softmax(self.inputSummation[i])
 			for j, prevNeuron in enumerate(self.prevLayer.neurons):
-				weightDiff = (-1) * diff[i] * derivative_softmax(self.inputSummation[i]) * prevNeuron.value
+				weightDiff = - rate * neuron.error * prevNeuron.value
 				prevNeuron.outgoing_weights[i] += weightDiff
 
 
 class Neuron:
 	value = 0
 	outgoing_weights = []
+	error = 0
 	def __init__(self):
 		super(Neuron, self).__init__()
 

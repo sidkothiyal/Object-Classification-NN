@@ -40,7 +40,9 @@ class NeuralNetwork:
                     self.back_propagate()
 
     def back_propagate(self):
-        pass
+        self.output_layer.change_weights(self.learning_rate)
+        for hidden_layer in reversed(self.hidden_layers):
+            hidden_layer.change_weights(self.learning_rate)
 
     def  setup_architecture(self):
         expected_output = []
@@ -59,12 +61,22 @@ class NeuralNetwork:
         self.input_layer = layers.InputLayer(len(feature_vector))
         self.get_hidden_layers(self.hidden_layer_sizes)
         self.output_layer = layers.OutputLayer(len(expected_output))
-        self.input_layer.setup_architecture()
+        if len(self.hidden_layer_sizes) = 0:
+            self.input_layer.setup_architecture(self.output_layer)
+        else:
+            self.input_layer.setup_architecture(self.hidden_layers[0])    
         for i, hidden_layer in enumerate(self.hidden_layers):
+            prevLayer = None
+            nextLayer = None
             if i == 0:
-                hidden_layer.setup_architecture(self.input_layer)
+                prevLayer = self.input_layer
             else:
-                hidden_layer.setup_architecture(self.hidden_layers[i-1])
+                prevLayer = self.hidden_layers[i-1]
+            if i == len(self.hidden_layers) - 1:
+                nextLayer = self.output_layer
+            else:
+                nextLayer = self.hidden_layers[i+1]        
+            hidden_layer.setup_architecture(prevLayer, nextLayer)    
         self.output_layer.setup_architecture(self.hidden_layers[-1])                
 
     def get_hidden_layers(self, hidden_layer_sizes):
