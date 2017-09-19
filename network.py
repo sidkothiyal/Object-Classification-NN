@@ -1,16 +1,19 @@
 import layers
 import feature
+import os
+import csv
+import linecache
 
 class NeuralNetwork:
     learning_rate = 0.3
     hidden_layers = []
     output_layer = None 
     input_layer = None
-    def __init__(self, training_folder='train/', hidden_layer_sizes):
+    def __init__(self, hidden_layer_sizes, training_folder='train/'):
         self.training_folder = training_folder
         self.hidden_layer_sizes = hidden_layer_sizes
 
-    def get_expected_output(output):
+    def get_expected_output(self, output):
         expected_vector = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         inps = ['frog', 'bird', 'airplane', 'dog', 'deer', 'truck', 'automobile', 'horse', 'cat', 'ship']
         for i, inp in enumerate(inps):
@@ -44,7 +47,7 @@ class NeuralNetwork:
         for hidden_layer in reversed(self.hidden_layers):
             hidden_layer.change_weights(self.learning_rate)
 
-    def  setup_architecture(self):
+    def setup_architecture(self):
         expected_output = []
         feature_vector = []
         for f in os.listdir(self.training_folder):
@@ -61,7 +64,7 @@ class NeuralNetwork:
         self.input_layer = layers.InputLayer(len(feature_vector))
         self.get_hidden_layers(self.hidden_layer_sizes)
         self.output_layer = layers.OutputLayer(len(expected_output))
-        if len(self.hidden_layer_sizes) = 0:
+        if len(self.hidden_layer_sizes) == 0:
             self.input_layer.setup_architecture(self.output_layer)
         else:
             self.input_layer.setup_architecture(self.hidden_layers[0])    
@@ -82,3 +85,9 @@ class NeuralNetwork:
     def get_hidden_layers(self, hidden_layer_sizes):
         for hidden_layer_size in hidden_layer_sizes:
             self.hidden_layers.append(layers.HiddenLayer(hidden_layer_size))
+
+
+if __name__ == '__main__':
+    nn = NeuralNetwork(hidden_layer_sizes=[90, 60, 30])
+    nn.setup_architecture()
+    nn.train()

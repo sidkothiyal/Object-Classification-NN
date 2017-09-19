@@ -41,8 +41,8 @@ def output_summation(layer, i):
 class HiddenLayer:
 	bias = 1
 	neurons = []
-	prevLayer = InputLayer()
-	nextLayer = HiddenLayer()
+	prevLayer = None
+	nextLayer = None
 	inputSummation = []
 
 	def __init__(self, hidden_layer_size):
@@ -94,7 +94,7 @@ class InputLayer:
 class OutputLayer:
 	bias = 1
 	neurons = []
-	prevLayer = HiddenLayer(0)
+	prevLayer = None
 	inputSummation = []
 
 	def __init__(self, output_size):
