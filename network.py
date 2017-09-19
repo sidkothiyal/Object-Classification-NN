@@ -11,35 +11,37 @@ class NeuralNetwork:
         self.hidden_layer_sizes = hidden_layer_sizes
 
     def get_expected_output(output):
-    	print output
-    	expected_vector = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    	inps = ['frog', 'bird', 'airplane', 'dog', 'deer', 'truck', 'automobile', 'horse', 'cat', 'ship']
-    	for i, inp in enumerate(inps):
-    		if inp == output:
-    			expected_vector[i] += 1 
-    	return expected_vector
+        expected_vector = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        inps = ['frog', 'bird', 'airplane', 'dog', 'deer', 'truck', 'automobile', 'horse', 'cat', 'ship']
+        for i, inp in enumerate(inps):
+            if inp == output:
+                expected_vector[i] += 1 
+        return expected_vector
 
     def train(self):
-		for f in os.listdir(self.training_folder):
-			if '.png' in f:
-				feature_vector = feature.get_features('train/'+f)
-				f = f.split('.')
-				f = f[0]
-				theline = linecache.getline('trainLabels.csv', int(f) + 1)
-				theline = theline.strip(' ')
-				theline = theline.strip('\n')
-				theline = theline.split(',')
-				theline = theline[1]
-				expected_output = self.get_expected_output(theline)
+        for f in os.listdir(self.training_folder):
+            if '.png' in f:
+                feature_vector = feature.get_features('train/'+f)
+                f = f.split('.')
+                f = f[0]
+                if f < 30000:
+                    theline = linecache.getline('trainLabels.csv', int(f) + 1)
+                    theline = theline.strip(' ')
+                    theline = theline.strip('\n')
+                    theline = theline.split(',')
+                    theline = theline[1]
+                    expected_output = self.get_expected_output(theline)
 
-                self.input_layer.put_values(feature_vector)
-                for hidden_layer in self.hidden_layers:
-                    hidden_layer.calc_neuron_vals()
-                self.output_layer.calc_neuron_vals()
-                self.output_layer.put_values(expected_output)
+                    self.input_layer.put_values(feature_vector)
+                    for hidden_layer in self.hidden_layers:
+                        hidden_layer.calc_neuron_vals()
+                    self.output_layer.calc_neuron_vals()
+                    self.output_layer.put_values(expected_output)
+                    self.back_propagate()
 
-                
-	
+    def back_propagate(self):
+        pass
+
     def  setup_architecture(self):
         expected_output = []
         feature_vector = []

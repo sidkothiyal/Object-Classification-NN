@@ -16,7 +16,7 @@ def derivative_softmax(x):
 
 def leaky_relu(x):
 	if x < 0:
-		return 0.001 *x
+		return 0.01 *x
 	else:
 		return x	
 
@@ -37,28 +37,33 @@ def output_summation(layer, i):
 
 
 class HiddenLayer:
-	bias = 0
+	bias = 1
 	neurons = []
 	prevLayer = InputLayer()
+	inputSummation = []
+
 	def __init__(self, hidden_layer_size):
 		super(HiddenLayer, self).__init__()
 		self.size = hidden_layer_size
 
 	def calc_neuron_vals(self):
+		self.inputSummation = []
 		for i, neuron in enumerate(self.neurons):
-			neuron.value = output_function(output_summation(self.prevLayer, i) + self.bias)
+			self.inputSummation.append(output_summation(self.prevLayer, i) + self.bias)
+			neuron.value = leaky_relu(self.inputSummation[-1])
 
 	def set_architecture(self, inputLayer):
 		self.prevLayer = inputLayer
 		bias = 0.5
 		for i in xrange(self.size):
-			self.neurons.append(Neuron)
+			self.neurons.append(Neuron())
 			for j, neuron in enumerate(self.prevLayer.neurons):
 				neuron.outgoing_weights.append(0)
 
 
 class InputLayer:
 	neurons = []
+
 	def __init__(self, size):
 		super(InputLayer, self).__init__()
 		self.size = size
@@ -73,22 +78,28 @@ class InputLayer:
 
 
 class OutputLayer:
-	bias = 0
+	bias = 1
 	neurons = []
 	prevLayer = HiddenLayer(0)
+	inputSummation = []
+
 	def __init__(self, output_size):
 		super(OutputLayer, self).__init__()
 		self.size = output_size
 
 	def calc_neuron_vals(self):
-		for i, neuron in enumerate(self/neurons):
-			neuron.value = output_function(output_summation(self.prevLayer, i) + self.bias)
+		self.inputSummation = []
+		for i, neuron in enumerate(self.neurons):
+			self.inputSummation.append(output_summation(self.prevLayer, i) + self.bias)
+		neuron_vals = softmax(self.inputSummation)
+		for i, neuron in enumerate(self.neurons):
+			neuron.value = neuron_vals[i]
 
 	def set_architecture(self, hiddenLayer):
 		self.prevLayer = hiddenLayer
 		bias = 0.5
 		for i in xrange(self.size):
-			self.neurons.append(Neuron)
+			self.neurons.append(Neuron())
 			for j, neuron in enumerate(self.prevLayer.neurons):
 				neuron.outgoing_weights.append(0)
 
@@ -98,8 +109,15 @@ class OutputLayer:
 	def output_diff(self):
 		diff = []
 		for i in xrange(self.size):
-			dif.append(expected_output[i] - self.neurons[i].value)
-		return diff	
+			dif.append(self.expected_output[i] - self.neurons[i].value)
+		return diff
+
+	def change_weights(self):
+		diff = self.output_diff()
+		for i, neuron in enumerate(self.neurons):
+			for j, prevNeuron in enumerate(self.prevLayer.neurons):
+				weightDiff = (-1) * diff[i] * derivative_softmax(self.inputSummation[i]) * prevNeuron.value
+				prevNeuron.outgoing_weights[i] += weightDiff
 
 
 class Neuron:
