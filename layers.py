@@ -1,15 +1,21 @@
 import math
+import random
 
 #TODO bias and bias wt
 
 def softmax(output_layer_vals):
 	softmax_vals = []
 	sum_of_vals = 0
+	max_val = 0
+	for output_layer_val in output_layer_vals:
+		if max_val < output_layer_val:
+			max_val = output_layer_val
+
 	for i, output_layer_val in enumerate(output_layer_vals):
-		sum_of_vals += math.exp(output_layer_val)
+		sum_of_vals += math.exp(output_layer_val - max_val)
 	
 	for i, output_layer_val in enumerate(output_layer_vals):
-		softmax_vals.append(math.exp(output_layer_val)/sum_of_vals)
+		softmax_vals.append(math.exp(output_layer_val - max_val)/sum_of_vals)
 
 	return softmax_vals	
 
@@ -31,9 +37,13 @@ def derivative_leaky_relu(x):
 def output_function(x):
 	return 1/(1 + math.exp(-x))
 
+def derivative_output_function(x):
+	return math.exp(x)/((1-math.exp(x)) * (1-math.exp(x)))	
+
 def output_summation(layer, i):
 	sum = 0
 	for neuron in layer.neurons:
+		#print neuron
 		sum += neuron.get_summation(i)
 	return sum
 
@@ -52,7 +62,8 @@ class HiddenLayer:
 		self.inputSummation = []
 		for i, neuron in enumerate(self.neurons):
 			self.inputSummation.append(output_summation(self.prevLayer, i) + self.bias)
-			neuron.value = leaky_relu(self.inputSummation[-1])
+			neuron.value = output_function(self.inputSummation[-1])
+			#print "val ", neuron.value
 
 	def set_architecture(self, prevLayer, nextLayer):
 		self.prevLayer = prevLayer
@@ -61,17 +72,17 @@ class HiddenLayer:
 		for i in xrange(self.size):
 			self.neurons.append(Neuron())
 			for j, neuron in enumerate(self.prevLayer.neurons):
-				neuron.outgoing_weights.append(0)
+				neuron.outgoing_weights.append(random.uniform(0, 1))
 
 	def change_weights(self, rate):
 		for i, neuron in enumerate(self.neurons):
-			neuron.error = derivative_leaky_relu(self.inputSummation[i])
+			neuron.error = derivative_output_function(self.inputSummation[i])
 			sumNextErrors = 0
 			for j, nextNeuron in enumerate(self.nextLayer.neurons):
 				sumNextErrors += neuron.outgoing_weights[i] * nextNeuron.error
 			neuron.error *= sumNextErrors
 			for j, prevNeuron in enumerate(self.prevLayer.neurons):
-				weightDiff = - rate * neuron.error * prevNeuron.value
+				weightDiff = rate * neuron.error * prevNeuron.value
 				prevNeuron.outgoing_weights[i] += weightDiff	
 
 class InputLayer:
@@ -102,6 +113,7 @@ class OutputLayer:
 	def calc_neuron_vals(self):
 		self.inputSummation = []
 		for i, neuron in enumerate(self.neurons):
+			#print output_summation(self.prevLayer, i)
 			self.inputSummation.append(output_summation(self.prevLayer, i) + self.bias)
 		neuron_vals = softmax(self.inputSummation)
 		for i, neuron in enumerate(self.neurons):
@@ -113,7 +125,7 @@ class OutputLayer:
 		for i in xrange(self.size):
 			self.neurons.append(Neuron())
 			for j, neuron in enumerate(self.prevLayer.neurons):
-				neuron.outgoing_weights.append(0)
+				neuron.outgoing_weights.append(random.uniform(0, 1))
 
 	def put_values(self, expected_output):
 		self.expected_output = expected_output
@@ -136,10 +148,13 @@ class OutputLayer:
 
 	def change_weights(self, rate):
 		diff = self.output_diff()
+		#print "diff ", diff
 		for i, neuron in enumerate(self.neurons):
-			neuron.error = diff[i] * derivative_softmax(self.inputSummation[i])
+			neuron.error = diff[i] * derivative_softmax(neuron.value)
+			#print self.inputSummation[i]
 			for j, prevNeuron in enumerate(self.prevLayer.neurons):
-				weightDiff = - rate * neuron.error * prevNeuron.value
+				weightDiff = rate * neuron.error * prevNeuron.value
+				#print weightDiff
 				prevNeuron.outgoing_weights[i] += weightDiff
 
 

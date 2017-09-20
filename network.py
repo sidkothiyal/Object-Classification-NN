@@ -128,6 +128,7 @@ if __name__ == '__main__':
     nn.setup_architecture()
     for i in xrange(10000):
         print i
+        '''
         for neuron in nn.input_layer.neurons:
             print neuron.outgoing_weights
         for j in nn.hidden_layers:
@@ -135,6 +136,7 @@ if __name__ == '__main__':
                 print neuron.outgoing_weights
         for neuron in nn.output_layer.neurons:
             print neuron.outgoing_weights
+        '''
         nn.train()
     nn.test()
     print "true ", nn.p
