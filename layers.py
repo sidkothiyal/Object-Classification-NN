@@ -46,7 +46,6 @@ class HiddenLayer:
 	inputSummation = []
 
 	def __init__(self, hidden_layer_size):
-		super(HiddenLayer, self).__init__()
 		self.size = hidden_layer_size
 
 	def calc_neuron_vals(self):
@@ -77,14 +76,14 @@ class HiddenLayer:
 
 class InputLayer:
 	neurons = []
-
+	nextLayer = None
 	def __init__(self, size):
-		super(InputLayer, self).__init__()
 		self.size = size
 
-	def set_architecture(self):
+	def set_architecture(self, nextLayer):
 		for i in xrange(self.size):
 			self.neurons.append(Neuron())
+		self.nextLayer = nextLayer	
 
 	def put_values(self, feature_vector):
 		for i, feature in enumerate(feature_vector):
@@ -98,7 +97,6 @@ class OutputLayer:
 	inputSummation = []
 
 	def __init__(self, output_size):
-		super(OutputLayer, self).__init__()
 		self.size = output_size
 
 	def calc_neuron_vals(self):
@@ -123,8 +121,18 @@ class OutputLayer:
 	def output_diff(self):
 		diff = []
 		for i in xrange(self.size):
-			dif.append(self.expected_output[i] - self.neurons[i].value)
+			diff.append(self.expected_output[i] - self.neurons[i].value)
 		return diff
+
+	def get_output(self):
+		max_val = 0
+		max_pos = 0
+		for i, neuron in enumerate(self.neurons):
+			if max_val < neuron.value:
+				max_val = neuron.value
+				max_pos = i
+		inps = ['frog', 'bird', 'airplane', 'dog', 'deer', 'truck', 'automobile', 'horse', 'cat', 'ship']
+		return inps[max_pos]
 
 	def change_weights(self, rate):
 		diff = self.output_diff()
@@ -140,7 +148,7 @@ class Neuron:
 	outgoing_weights = []
 	error = 0
 	def __init__(self):
-		super(Neuron, self).__init__()
+		pass
 
 	def get_summation(self, i):
-		return value * outgoing_weights[i]
+		return self.value * self.outgoing_weights[i]

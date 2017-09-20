@@ -264,7 +264,8 @@ def normalize(hists):
 	for hist in hists:
 		for val in hist:
 			if maxVal == 0:
-				print hists
+				pass
+				#print hists
 			else:	
 				feature_vector.append(val/maxVal)
 
